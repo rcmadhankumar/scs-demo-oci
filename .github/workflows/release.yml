@@ -50,5 +50,5 @@ jobs:
         run: |
           cosign verify \
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }} \
-            --certificate-identity-regexp=https://github.com/thomasvitale \
+            --certificate-identity-regexp=https://github.com/ThomasVitale \
             --certificate-oidc-issuer=https://token.actions.githubusercontent.com
