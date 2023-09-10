@@ -37,7 +37,7 @@ jobs:
       - name: Build and publish container image
         run: |
           pack build ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }} \
-            --tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+            --tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest \
             --builder paketobuildpacks/builder-jammy-tiny \
             --publish
 
