@@ -1,0 +1,54 @@
+name: Release
+on: push
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: thomasvitale/scs-demo-oci
+  VERSION: ${{ github.sha }}
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    steps:
+      - name: Check out source code
+        uses: actions/checkout@v4
+      
+      - name: Set up Cosign
+        uses: sigstore/cosign-installer@v3
+      
+      - name: Set up OCI Tools
+        uses: buildpacks/github-actions/setup-tools@v5.4.0
+      
+      - name: Set up Buildpacks
+        uses: buildpacks/github-actions/setup-pack@v5.4.0
+      
+      - name: Log into container registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+        
+      - name: Build and publish container image
+        run: |
+          pack build ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }} \
+            --tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+            --builder paketobuildpacks/builder-jammy-tiny \
+            --publish
+
+      - name: Sign container image
+        run: |
+          IMAGE_DIGEST="$(crane digest ${REGISTRY}/${IMAGE_NAME}:${VERSION})"
+          cosign sign --yes "${REGISTRY}/${IMAGE_NAME}@${IMAGE_DIGEST}"
+
+      - name: Verify signature on container image
+        run: |
+          cosign verify \
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }} \
+            --certificate-identity-regexp=https://github.com/thomasvitale \
+            --certificate-oidc-issuer=https://token.actions.githubusercontent.com
