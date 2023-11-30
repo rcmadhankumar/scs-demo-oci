@@ -3,7 +3,7 @@ on: push
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: thomasvitale/scs-demo-oci
+  IMAGE_NAME: rcmadhankumar/scs-demo-oci
   VERSION: ${{ github.sha }}
 
 jobs:
